@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: taskflow-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - taskflow-network
+
+  backend:
+    image: ${DOCKER_USERNAME}/taskflow-backend:latest
+    container_name: taskflow-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file: .env
+    depends_on:
+      - mongodb
+    networks:
+      - taskflow-network
+
+  frontend:
+    image: ${DOCKER_USERNAME}/taskflow-frontend:latest
+    container_name: taskflow-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - taskflow-network
+
+volumes:
+  mongo-data:
+
+networks:
+  taskflow-network:
+    driver: bridge
