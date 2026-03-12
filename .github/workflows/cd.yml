@@ -31,7 +31,8 @@ jobs:
       - name: Build and push frontend image
         uses: docker/build-push-action@v4
         with:
-          context: ./frontend
+          context: .
+          file: ./frontend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/taskflow-frontend:latest,${{ secrets.DOCKER_USERNAME }}/taskflow-frontend:${{ github.sha }}
 
@@ -42,14 +43,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         
-      - name: Deploy using SSH
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            cd ~/taskflow
-            docker-compose -f docker-compose.prod.yml pull
-            docker-compose -f docker-compose.prod.yml up -d --remove-orphans
-            docker image prune -f
+      - name: Deploy to Render
+        run: |
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK }}" ]; then
+            echo "Error: RENDER_DEPLOY_HOOK secret is not set."
+            exit 1
+          fi
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
