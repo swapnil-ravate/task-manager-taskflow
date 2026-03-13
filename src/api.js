@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = 'https://task-manager-backend-4yrn.onrender.com/api';
+const API_URL = import.meta.env.MODE === 'development' 
+  ? 'http://localhost:5000/api'
+  : 'https://task-manager-backend-4yrn.onrender.com/api';
 
 // Create axios instance
 const api = axios.create({
